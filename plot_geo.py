@@ -1,4 +1,5 @@
 import csv
+import geopy.distance
 
 def convert(degree):
     degree = degree.strip(',').\
@@ -17,5 +18,6 @@ for row in reader:
     print(', '.join(row))
     lat = convert(row[4])
     long = convert(row[5])
+    print(geopy.distance.vincenty((lat, long), (90.0,0.0)).km)
     # for x in range(7, )
 
