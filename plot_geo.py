@@ -1,23 +1,33 @@
-import csv
-import geopy.distance
+import matplotlib.pyplot as plt
+from colour import Color
 
-def convert(degree):
-    degree = degree.strip(',').\
-        replace('\x94',"").replace(","," ").replace("'", " ").replace("°", " ").replace('"', " ").replace("  ", " ").strip()
+from load_thaw_depth_probes import START_YEAR, FINISH_YEAR, load_data
 
-    multiplier = 1 if degree[-1] in ['N', 'E'] else -1
-    s = degree[:-1].strip().split(' ')
-    return multiplier * sum(float(x) / 60 ** n for n, x in enumerate(s))
+probes, probes_by_year = load_data()
 
-file = open("data//CALM_Summary_table_utf8.csv")
-reader = csv.reader(file, delimiter = ';')
+red = Color("red")
+colors = list(red.range_to(Color("green"),FINISH_YEAR-START_YEAR+1))
 
-for row in reader:
-    if not row[1] in {"United States (Alaska)", "CANADA", "Russia"}:
-        continue
-    print(', '.join(row))
-    lat = convert(row[4])
-    long = convert(row[5])
-    print(geopy.distance.vincenty((lat, long), (90.0,0.0)).km)
-    # for x in range(7, )
+fig = plt.figure()
+legend = []
 
+for year in range(2010, FINISH_YEAR+1): # range(START_YEAR, FINISH_YEAR+1,3):
+    # year = FINISH_YEAR - _year + START_YEAR
+
+    probes_by_year[year].sort(key=lambda data: data[0])
+
+    x = []
+    y = []
+
+    for data in probes_by_year[year]:
+        if data[0] < 1800 or data[0] > 3500:
+            continue
+        x.append(data[0])
+        y.append(data[1])
+
+    legend.append(year)
+    p = plt.plot(x, y, color = colors[year-START_YEAR].get_hex_l(), label=year)
+
+plt.legend(legend)
+# plt.savefig('filename.png', dpi=300)
+plt.show()
